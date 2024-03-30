@@ -15,6 +15,10 @@ public class InteractionHitbox {
 
     public static InteractionHitbox DEFAULT = new InteractionHitbox(new Vector(), 1.0, 1.0);
 
+    public static class Outline {
+
+    }
+
     public InteractionHitbox(Object hitboxObject) {
         InteractionHitbox hitbox;
         if (hitboxObject instanceof String string) hitbox = new InteractionHitbox(string);

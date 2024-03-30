@@ -20,6 +20,8 @@ public interface IFurniturePacketManager {
 
     Map<UUID, Set<BlockPosition>> barrierHitboxPositionMap = new HashMap<>();
     Set<FurnitureSubEntity> interactionHitboxIdMap = new HashSet<>();
+    Set<FurnitureSubEntity> hitboxOutlineIdMap = new HashSet<>();
+    Map<UUID, UUID> hitboxOutlinePlayerMap = new HashMap<>();
 
     @Nullable
     default Entity baseEntityFromHitbox(int interactionId) {
@@ -40,6 +42,11 @@ public interface IFurniturePacketManager {
     void sendInteractionEntityPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player);
     void removeInteractionHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic);
     void removeInteractionHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player);
+
+    void sendHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player);
+    void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic);
+    void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player);
+    void removeHitboxOutlinePacket(@NotNull Player player);
 
     void sendBarrierHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player);
     void removeBarrierHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic);

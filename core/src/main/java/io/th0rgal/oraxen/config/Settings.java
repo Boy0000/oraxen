@@ -75,16 +75,17 @@ public enum Settings {
     LEGACY_NOTEBLOCKS("CustomBlocks.use_legacy_noteblocks", VersionUtil.atOrAbove("1.20")),
     LEGACY_STRINGBLOCKS("CustomBlocks.use_legacy_stringblocks", false),
 
+    // Furniture
+    FURNITURE_OUTLINE_HITBOX("Furniture.outline_hitbox_default", false),
+    UPDATE_FURNITURE("Furniture.updater.update_furniture", true),
+    UPDATE_FURNITURE_ON_RELOAD("Furniture.updater.update_on_reload", false),
+    UPDATE_FURNITURE_ON_LOAD("Furniture.updater.update_on_load", false),
+
     // ItemUpdater
     UPDATE_ITEMS("ItemUpdater.update_items", true),
     UPDATE_ITEMS_ON_RELOAD("ItemUpdater.update_items_on_reload", true),
     OVERRIDE_RENAMED_ITEMS("ItemUpdater.override_renamed_items", false),
     OVERRIDE_ITEM_LORE("ItemUpdater.override_item_lore", false),
-
-    // FurnitureUpdater
-    UPDATE_FURNITURE("FurnitureUpdater.update_furniture", true),
-    UPDATE_FURNITURE_ON_RELOAD("FurnitureUpdater.update_on_reload", false),
-    UPDATE_FURNITURE_ON_LOAD("FurnitureUpdater.update_on_load", false),
 
     //Misc
     RESET_RECIPES("Misc.reset_recipes", true),

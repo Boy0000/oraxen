@@ -23,6 +23,26 @@ public class EmptyFurniturePacketManager implements IFurniturePacketManager {
     }
 
     @Override
+    public void sendHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
+
+    }
+
+    @Override
+    public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic) {
+
+    }
+
+    @Override
+    public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
+
+    }
+
+    @Override
+    public void removeHitboxOutlinePacket(@NotNull Player player) {
+
+    }
+
+    @Override
     public void sendBarrierHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
 
     }

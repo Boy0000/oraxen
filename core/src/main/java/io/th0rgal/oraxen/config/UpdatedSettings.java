@@ -28,6 +28,9 @@ public enum UpdatedSettings {
     GENERATE_ARMOR_SHADER_FILES("Pack.generation.generate_armor_shader_files", "CustomArmor.shader_settings.generate_armor_shader_files"),
     GENERATE_CUSTOM_ARMOR_TEXTURES("Pack.generation.generate_custom_armor_textures", "CustomArmor.shader_settings.generate_custom_armor_textures"),
     AUTOMATICALLY_GENERATE_SHADER_COMPATIBLE_ARMOR("Pack.generation.automatically_generate_shader_compatible_armor", "CustomArmor.shader_settings.generate_shader_compatible_armor"),
+    UPDATE_FURNITURE("FurnitureUpdater.update_furniture", "Furniture.updater.update_furniture"),
+    UPDATE_FURNITURE_ON_RELOAD("FurnitureUpdater.update_on_reload", "Furniture.updater.update_on_reload"),
+    UPDATE_FURNITURE_ON_LOAD("FurnitureUpdater.update_on_load", "Furniture.updater.update_on_load"),
     PACK_SEND_ON_JOIN("Pack.dispatch.send_pack", "Pack.dispatch.send_on_join"),
     ;
 
