@@ -5,12 +5,8 @@ import io.th0rgal.oraxen.items.ItemParser;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureFactory;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureMechanic;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.IFurniturePacketManager;
-import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_20_R3.block.CraftBlockState;
-import org.bukkit.craftbukkit.v1_20_R3.block.data.CraftBlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -26,7 +22,6 @@ public class FurnitureHitbox {
     private final List<InteractionHitbox> interactionHitboxes;
     private final boolean outline;
     private static final ItemStack outlineItem = new ItemParser(Settings.FURNITURE_OUTLINE_ITEM.toConfigSection()).buildItem().build();
-    private static final int outlineBlock = BlockData
 
     public FurnitureHitbox(@NotNull ConfigurationSection hitboxSection) {
         List<BarrierHitbox> barrierHitboxes = new ArrayList<>();
@@ -86,9 +81,5 @@ public class FurnitureHitbox {
     }
     public ItemStack outlineItem() {
         return outlineItem;
-    }
-
-    public int outlineBlock() {
-        return outlineBlock;
     }
 }

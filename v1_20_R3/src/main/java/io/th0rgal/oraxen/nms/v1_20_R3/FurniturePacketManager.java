@@ -23,6 +23,8 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
@@ -42,7 +44,8 @@ import java.util.stream.Collectors;
 public class FurniturePacketManager implements IFurniturePacketManager {
 
     public FurniturePacketManager() {
-        if (VersionUtil.isPaperServer()) MechanicsManager.registerListeners(OraxenPlugin.get(), "furniture", new FurniturePacketListener());
+        if (VersionUtil.isPaperServer())
+            MechanicsManager.registerListeners(OraxenPlugin.get(), "furniture", new FurniturePacketListener());
         else {
             Logs.logWarning("Seems that your server is a Spigot-server");
             Logs.logWarning("FurnitureHitboxes will not work due to it relying on Paper-only events");
@@ -57,6 +60,7 @@ public class FurniturePacketManager implements IFurniturePacketManager {
     private final int ITEM_DISPLAY_TRANSFORM = 24;
     private final Map<UUID, Set<FurnitureSubEntityPacket>> interactionHitboxPacketMap = new HashMap<>();
     private final Map<UUID, Set<FurnitureSubEntityPacket>> outlineHitboxPacketMap = new HashMap<>();
+
     @Override
     public void sendInteractionEntityPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
         List<InteractionHitbox> interactionHitboxes = mechanic.hitbox().interactionHitboxes();
@@ -150,24 +154,31 @@ public class FurniturePacketManager implements IFurniturePacketManager {
                     });
 
             ItemDisplay.ItemDisplayTransform transform = mechanic.hasDisplayEntityProperties() ? mechanic.displayEntityProperties().getDisplayTransform() : ItemDisplay.ItemDisplayTransform.FIXED;
+            ItemStack itemStack = CraftItemStack.asNMSCopy(mechanic.hitbox().outlineItem());
+            EntityType entityType = FurnitureOutlineType.fromSetting() == FurnitureOutlineType.ITEM ? EntityType.ITEM_DISPLAY : EntityType.BLOCK_DISPLAY;
+            SynchedEntityData.DataValue entityContent = FurnitureOutlineType.fromSetting() == FurnitureOutlineType.ITEM
+                    ? new SynchedEntityData.DataValue<>(23, EntityDataSerializers.ITEM_STACK, itemStack)
+                    : new SynchedEntityData.DataValue<>(23, EntityDataSerializers.BLOCK_STATE, Block.byItem(itemStack.getItem()).defaultBlockState());
+
             Set<FurnitureSubEntityPacket> packets = new HashSet<>();
             for (int i = 0; i < interactionHitboxes.size(); i++) {
                 InteractionHitbox hitbox = interactionHitboxes.get(i);
                 int entityId = entityIds.get(i);
 
                 Location loc = hitbox.location(baseEntity);
+                if (FurnitureOutlineType.fromSetting() == FurnitureOutlineType.BLOCK)
+                    loc = BlockHelpers.toBlockLocation(loc);
                 ClientboundAddEntityPacket addEntityPacket = new ClientboundAddEntityPacket(
                         entityId, UUID.randomUUID(),
-                        loc.x(), loc.y(), loc.z(), 0, loc.getYaw(),
-                        FurnitureOutlineType.fromSetting() == FurnitureOutlineType.BLOCK ? EntityType.BLOCK_DISPLAY : EntityType.ITEM_DISPLAY,
-                        0, Vec3.ZERO, 0.0
+                        loc.x(), loc.y(), loc.z(), 0, 0,
+                        entityType, 0, Vec3.ZERO, 0.0
                 );
 
                 ClientboundSetEntityDataPacket metadataPacket = new ClientboundSetEntityDataPacket(
                         entityId, Arrays.asList(
-                        new SynchedEntityData.DataValue<>(12, EntityDataSerializers.VECTOR3, new Vector3f(hitbox.width(), hitbox.height(), hitbox.width())),
-                        new SynchedEntityData.DataValue<>(23, EntityDataSerializers.INT, mechanic.hitbox().outlineItem()),
-                        new SynchedEntityData.DataValue<>(24, EntityDataSerializers.INT, transform.ordinal())
+                        entityContent,
+                        new SynchedEntityData.DataValue<Vector3f>(12, EntityDataSerializers.VECTOR3, new Vector3f(hitbox.width(), hitbox.height(), hitbox.width())),
+                        new SynchedEntityData.DataValue<Integer>(24, EntityDataSerializers.INT, transform.ordinal())
                 ));
 
                 packets.add(new FurnitureSubEntityPacket(entityId, addEntityPacket, metadataPacket));
@@ -239,7 +250,8 @@ public class FurniturePacketManager implements IFurniturePacketManager {
         player.sendMultiBlockChange(positions);
     }
 
-    @Override @Nullable
+    @Override
+    @Nullable
     public Entity getTargetFurnitureHitbox(Player player, double maxDistance) {
         if (maxDistance < 1 || maxDistance > 120) return null;
         CraftPlayer craftPlayer = (CraftPlayer) player;
@@ -248,7 +260,7 @@ public class FurniturePacketManager implements IFurniturePacketManager {
         Vec3 direction = nmsPlayer.getLookAngle();
         Vec3 distanceDirection = new Vec3(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance);
         Vec3 end = start.add(distanceDirection);
-        List<net.minecraft.world.entity.Entity> entities = nmsPlayer.level().getEntities(nmsPlayer, nmsPlayer.getBoundingBox().expandTowards(distanceDirection).inflate(1.0,1.0,1.0), EntitySelector.NO_SPECTATORS);
+        List<net.minecraft.world.entity.Entity> entities = nmsPlayer.level().getEntities(nmsPlayer, nmsPlayer.getBoundingBox().expandTowards(distanceDirection).inflate(1.0, 1.0, 1.0), EntitySelector.NO_SPECTATORS);
         double distance = 0.0;
         Iterator<net.minecraft.world.entity.Entity> entityIterator = entities.iterator();
 
@@ -277,7 +289,7 @@ public class FurniturePacketManager implements IFurniturePacketManager {
 
                 rayTrace = rayTraceResult.get();
                 distanceTo = start.distanceToSqr(rayTrace);
-            } while(!(distanceTo < distance) && distance != 0.0);
+            } while (!(distanceTo < distance) && distance != 0.0);
 
             baseEntity = entity.getBukkitEntity();
             distance = distanceTo;

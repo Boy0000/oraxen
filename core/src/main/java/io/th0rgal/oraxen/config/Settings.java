@@ -80,7 +80,6 @@ public enum Settings {
     FURNITURE_OUTLINE_HITBOX("Furniture.outline.default", false),
     FURNITURE_OUTLINE_TYPE("Furniture.outline.type", FurnitureOutlineType.ITEM.name()),
     FURNITURE_OUTLINE_ITEM("Furniture.outline.item", Map.of("material", Material.GLASS.name(), "excludeFromInventory", true, "injectID", false)),
-    FURNITURE_OUTLINE_BLOCK("Furniture.outline.block", Map.of("material", Material.GLASS.name())),
     UPDATE_FURNITURE("Furniture.updater.update_furniture", true),
     UPDATE_FURNITURE_ON_RELOAD("Furniture.updater.update_on_reload", false),
     UPDATE_FURNITURE_ON_LOAD("Furniture.updater.update_on_load", false),

@@ -12,7 +12,9 @@ import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.listeners.Furnitu
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.listeners.FurnitureSoundListener;
 import io.th0rgal.oraxen.nms.EmptyFurniturePacketManager;
 import io.th0rgal.oraxen.nms.NMSHandlers;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -96,6 +98,9 @@ public class FurnitureFactory extends MechanicFactory {
 
     public void unregisterOutlineSystem() {
         if (outlineSystem != null) outlineSystem.cancel();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            FurnitureFactory.instance.furniturePacketManager().removeHitboxOutlinePacket(player);
+        }
     }
 
     @Override

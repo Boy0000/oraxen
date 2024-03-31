@@ -58,6 +58,7 @@ public interface IFurniturePacketManager {
             if (mechanic == null) continue;
             removeInteractionHitboxPacket(entity, mechanic);
             removeBarrierHitboxPacket(entity, mechanic);
+            removeHitboxOutlinePacket(entity, mechanic);
         }
     }
 
