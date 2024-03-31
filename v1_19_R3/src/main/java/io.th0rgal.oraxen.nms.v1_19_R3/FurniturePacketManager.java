@@ -113,6 +113,11 @@ public class FurniturePacketManager implements IFurniturePacketManager {
         ((CraftPlayer) player).getHandle().connection.send(new ClientboundRemoveEntitiesPacket(entityIds.toIntArray()));
     }
 
+    @Override public void sendHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {}
+    @Override public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic) {}
+    @Override public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {}
+    @Override public void removeHitboxOutlinePacket(@NotNull Player player) {}
+
     @Override
     public void sendBarrierHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
         Map<Position, BlockData> positions = mechanic.hitbox().barrierHitboxes().stream()

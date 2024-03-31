@@ -6,6 +6,7 @@ import io.th0rgal.oraxen.mechanics.MechanicFactory;
 import io.th0rgal.oraxen.mechanics.MechanicsManager;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.evolution.EvolutionListener;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.evolution.EvolutionTask;
+import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.hitbox.FurnitureOutlineSystem;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.jukebox.JukeboxListener;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.listeners.FurnitureListener;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.listeners.FurnitureSoundListener;
@@ -27,10 +28,12 @@ public class FurnitureFactory extends MechanicFactory {
     private static EvolutionTask evolutionTask;
     public final boolean customSounds;
     public final boolean detectViabackwards;
+    private FurnitureOutlineSystem outlineSystem;
 
     public FurnitureFactory(ConfigurationSection section) {
         super(section);
         instance = this;
+
         if (OraxenPlugin.supportsDisplayEntities)
             defaultFurnitureType = FurnitureMechanic.FurnitureType.getType(section.getString("default_furniture_type", "DISPLAY_ENTITY"));
         else defaultFurnitureType = FurnitureMechanic.FurnitureType.ITEM_FRAME;
@@ -82,6 +85,17 @@ public class FurnitureFactory extends MechanicFactory {
     public static void unregisterEvolution() {
         if (evolutionTask != null)
             evolutionTask.cancel();
+    }
+
+    public void registerOutlineSystem() {
+        if (outlineSystem != null) outlineSystem.cancel();
+        outlineSystem = new FurnitureOutlineSystem();
+        BukkitTask task = outlineSystem.runTaskTimer(OraxenPlugin.get(), 0, 1);
+        MechanicsManager.registerTask(getMechanicID(), task);
+    }
+
+    public void unregisterOutlineSystem() {
+        if (outlineSystem != null) outlineSystem.cancel();
     }
 
     @Override

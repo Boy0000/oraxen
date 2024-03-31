@@ -97,7 +97,6 @@ public class FurniturePacketManager implements IFurniturePacketManager {
         });
 
     }
-
     @Override
     public void removeInteractionHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic) {
         for (Player player : baseEntity.getWorld().getPlayers()) {
@@ -106,12 +105,16 @@ public class FurniturePacketManager implements IFurniturePacketManager {
         interactionHitboxIdMap.removeIf(id -> id.baseUUID().equals(baseEntity.getUniqueId()));
         interactionHitboxPacketMap.remove(baseEntity.getUniqueId());
     }
-
     @Override
     public void removeInteractionHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
         IntList entityIds = interactionHitboxIdMap.stream().filter(id -> id.baseUUID().equals(baseEntity.getUniqueId())).findFirst().map(FurnitureSubEntity::entityIds).orElse(IntList.of());
         ((CraftPlayer) player).getHandle().connection.send(new ClientboundRemoveEntitiesPacket(entityIds.toIntArray()));
     }
+
+    @Override public void sendHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {}
+    @Override public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic) {}
+    @Override public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {}
+    @Override public void removeHitboxOutlinePacket(@NotNull Player player) {}
 
     @Override
     public void sendBarrierHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
@@ -130,7 +133,6 @@ public class FurniturePacketManager implements IFurniturePacketManager {
             });
         }
     }
-
     @Override
     public void removeBarrierHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic) {
         for (Player player : baseEntity.getWorld().getPlayers()) {
@@ -138,7 +140,6 @@ public class FurniturePacketManager implements IFurniturePacketManager {
         }
         barrierHitboxPositionMap.remove(baseEntity.getUniqueId());
     }
-
     @Override
     public void removeBarrierHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
         Map<Position, BlockData> positions = mechanic.hitbox().barrierHitboxes().stream()

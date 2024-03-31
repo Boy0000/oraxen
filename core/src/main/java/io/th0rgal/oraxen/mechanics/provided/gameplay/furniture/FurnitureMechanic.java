@@ -8,6 +8,7 @@ import com.ticxo.modelengine.api.model.ModeledEntity;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.api.OraxenItems;
 import io.th0rgal.oraxen.compatibilities.provided.blocklocker.BlockLockerMechanic;
+import io.th0rgal.oraxen.config.Settings;
 import io.th0rgal.oraxen.mechanics.Mechanic;
 import io.th0rgal.oraxen.mechanics.MechanicFactory;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.evolution.EvolvingFurniture;
@@ -185,6 +186,10 @@ public class FurnitureMechanic extends Mechanic {
 
         ConfigurationSection blockLockerSection = section.getConfigurationSection("blocklocker");
         blockLocker = blockLockerSection != null ? new BlockLockerMechanic(blockLockerSection) : null;
+
+        if (Settings.FURNITURE_OUTLINE_HITBOX.toBool()) {
+            FurnitureFactory.instance.registerOutlineSystem();
+        }
     }
 
     public boolean isModelEngine() {
