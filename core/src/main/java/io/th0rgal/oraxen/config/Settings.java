@@ -2,6 +2,7 @@ package io.th0rgal.oraxen.config;
 
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.font.FontEvents;
+import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.hitbox.FurnitureOutlineType;
 import io.th0rgal.oraxen.nms.GlyphHandlers;
 import io.th0rgal.oraxen.pack.server.PackServerType;
 import io.th0rgal.oraxen.utils.AdventureUtils;
@@ -76,7 +77,10 @@ public enum Settings {
     LEGACY_STRINGBLOCKS("CustomBlocks.use_legacy_stringblocks", false),
 
     // Furniture
-    FURNITURE_OUTLINE_HITBOX("Furniture.outline_hitbox_default", false),
+    FURNITURE_OUTLINE_HITBOX("Furniture.outline.default", false),
+    FURNITURE_OUTLINE_TYPE("Furniture.outline.type", FurnitureOutlineType.ITEM.name()),
+    FURNITURE_OUTLINE_ITEM("Furniture.outline.item", Map.of("material", Material.GLASS.name(), "excludeFromInventory", true, "injectID", false)),
+    FURNITURE_OUTLINE_BLOCK("Furniture.outline.block", Map.of("material", Material.GLASS.name())),
     UPDATE_FURNITURE("Furniture.updater.update_furniture", true),
     UPDATE_FURNITURE_ON_RELOAD("Furniture.updater.update_on_reload", false),
     UPDATE_FURNITURE_ON_LOAD("Furniture.updater.update_on_load", false),

@@ -18,7 +18,7 @@ public class FurnitureOutlineSystem extends BukkitRunnable {
                 IFurniturePacketManager packetManager = FurnitureFactory.instance.furniturePacketManager();
                 Entity baseEntity = packetManager.getTargetFurnitureHitbox(player, 5);
                 FurnitureMechanic mechanic = OraxenFurniture.getFurnitureMechanic(baseEntity);
-                if (baseEntity == null || mechanic == null) packetManager.removeHitboxOutlinePacket(player);
+                if (baseEntity == null || mechanic == null || !mechanic.hitbox().outlineHitboxes()) packetManager.removeHitboxOutlinePacket(player);
                 else packetManager.sendHitboxOutlinePacket(baseEntity, mechanic, player);
             }
         }

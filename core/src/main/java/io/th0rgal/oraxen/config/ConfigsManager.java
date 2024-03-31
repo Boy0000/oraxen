@@ -219,7 +219,7 @@ public class ConfigsManager {
 
     public Map<File, Map<String, ItemBuilder>> parseItemConfig() {
         Map<File, Map<String, ItemBuilder>> parseMap = new LinkedHashMap<>();
-        ItemBuilder errorItem = new ItemBuilder(Material.PODZOL);
+        ItemBuilder errorItem = new ItemParser(Settings.ERROR_ITEM.toConfigSection()).buildItem();
         for (File file : getItemFiles()) parseMap.put(file, parseItemConfig(file, errorItem));
         return parseMap;
     }

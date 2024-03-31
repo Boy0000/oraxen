@@ -10,6 +10,7 @@ import io.th0rgal.oraxen.mechanics.MechanicsManager;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureMechanic;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureSubEntity;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.IFurniturePacketManager;
+import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.hitbox.FurnitureOutlineType;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.hitbox.InteractionHitbox;
 import io.th0rgal.oraxen.utils.BlockHelpers;
 import io.th0rgal.oraxen.utils.VersionUtil;
@@ -25,14 +26,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -160,13 +159,14 @@ public class FurniturePacketManager implements IFurniturePacketManager {
                 ClientboundAddEntityPacket addEntityPacket = new ClientboundAddEntityPacket(
                         entityId, UUID.randomUUID(),
                         loc.x(), loc.y(), loc.z(), 0, loc.getYaw(),
-                        EntityType.ITEM_DISPLAY, 0, Vec3.ZERO, 0.0
+                        FurnitureOutlineType.fromSetting() == FurnitureOutlineType.BLOCK ? EntityType.BLOCK_DISPLAY : EntityType.ITEM_DISPLAY,
+                        0, Vec3.ZERO, 0.0
                 );
 
                 ClientboundSetEntityDataPacket metadataPacket = new ClientboundSetEntityDataPacket(
                         entityId, Arrays.asList(
                         new SynchedEntityData.DataValue<>(12, EntityDataSerializers.VECTOR3, new Vector3f(hitbox.width(), hitbox.height(), hitbox.width())),
-                        new SynchedEntityData.DataValue<>(23, EntityDataSerializers.ITEM_STACK, CraftItemStack.asNMSCopy(new ItemStack(Material.GLASS))),
+                        new SynchedEntityData.DataValue<>(23, EntityDataSerializers.INT, mechanic.hitbox().outlineItem()),
                         new SynchedEntityData.DataValue<>(24, EntityDataSerializers.INT, transform.ordinal())
                 ));
 

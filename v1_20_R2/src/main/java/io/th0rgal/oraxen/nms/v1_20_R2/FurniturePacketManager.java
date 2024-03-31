@@ -22,14 +22,12 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
@@ -157,7 +155,7 @@ public class FurniturePacketManager implements IFurniturePacketManager {
                 ClientboundSetEntityDataPacket metadataPacket = new ClientboundSetEntityDataPacket(
                         entityId, Arrays.asList(
                         new SynchedEntityData.DataValue<>(12, EntityDataSerializers.VECTOR3, new Vector3f(hitbox.width(), hitbox.height(), hitbox.width())),
-                        new SynchedEntityData.DataValue<>(23, EntityDataSerializers.ITEM_STACK, CraftItemStack.asNMSCopy(new ItemStack(Material.GLASS))),
+                        new SynchedEntityData.DataValue<>(23, EntityDataSerializers.ITEM_STACK, CraftItemStack.asNMSCopy(mechanic.hitbox().outlineItem())),
                         new SynchedEntityData.DataValue<>(24, EntityDataSerializers.INT, transform.ordinal())
                 ));
 

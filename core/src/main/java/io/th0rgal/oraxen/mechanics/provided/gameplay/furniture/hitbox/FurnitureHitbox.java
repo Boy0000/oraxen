@@ -1,22 +1,32 @@
 package io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.hitbox;
 
 import io.th0rgal.oraxen.config.Settings;
+import io.th0rgal.oraxen.items.ItemParser;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureFactory;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureMechanic;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.IFurniturePacketManager;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.craftbukkit.v1_20_R3.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_20_R3.block.data.CraftBlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class FurnitureHitbox {
     public static final FurnitureHitbox EMPTY = new FurnitureHitbox(List.of(), List.of(), false);
     private final List<BarrierHitbox> barrierHitboxes;
     private final List<InteractionHitbox> interactionHitboxes;
-    private final boolean outlineHitboxes;
+    private final boolean outline;
+    private static final ItemStack outlineItem = new ItemParser(Settings.FURNITURE_OUTLINE_ITEM.toConfigSection()).buildItem().build();
+    private static final int outlineBlock = BlockData
 
     public FurnitureHitbox(@NotNull ConfigurationSection hitboxSection) {
         List<BarrierHitbox> barrierHitboxes = new ArrayList<>();
@@ -29,13 +39,13 @@ public class FurnitureHitbox {
 
         this.barrierHitboxes = barrierHitboxes;
         this.interactionHitboxes = interactionHitboxes;
-        this.outlineHitboxes = hitboxSection.getBoolean("outline", Settings.FURNITURE_OUTLINE_HITBOX.toBool());
+        this.outline = hitboxSection.getBoolean("outline", Settings.FURNITURE_OUTLINE_HITBOX.toBool());
     }
 
     public FurnitureHitbox(Collection<BarrierHitbox> barrierHitboxes, Collection<InteractionHitbox> interactionHitboxes, boolean outlineHitboxes) {
         this.barrierHitboxes = new ArrayList<>(barrierHitboxes);
         this.interactionHitboxes = new ArrayList<>(interactionHitboxes);
-        this.outlineHitboxes = outlineHitboxes;
+        this.outline = outlineHitboxes;
     }
 
     public List<BarrierHitbox> barrierHitboxes() {
@@ -72,6 +82,13 @@ public class FurnitureHitbox {
     }
 
     public boolean outlineHitboxes() {
-        return outlineHitboxes;
+        return outline;
+    }
+    public ItemStack outlineItem() {
+        return outlineItem;
+    }
+
+    public int outlineBlock() {
+        return outlineBlock;
     }
 }
