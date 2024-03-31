@@ -78,7 +78,7 @@ public class InteractionHitbox {
      * @return Offset location from baseEntity
      */
     public Location location(Entity baseEntity) {
-        return BlockHelpers.toCenterBlockLocation(baseEntity.getLocation()).add(offset(baseEntity.getYaw())).add(0,height / 2, 0);
+        return BlockHelpers.toCenterBlockLocation(baseEntity.getLocation()).add(offset(baseEntity.getYaw()));
     }
 
     private Vector rotateOffset(float angle) {

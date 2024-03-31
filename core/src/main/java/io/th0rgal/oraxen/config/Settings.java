@@ -58,7 +58,7 @@ public enum Settings {
     DISABLE_AUTOMATIC_MODEL_DATA("ConfigsTools.disable_automatic_model_data", false),
     DISABLE_AUTOMATIC_GLYPH_CODE("ConfigsTools.disable_automatic_glyph_code", false),
     SKIPPED_MODEL_DATA_NUMBERS("ConfigsTools.skipped_model_data_numbers", List.of()),
-    ERROR_ITEM("ConfigsTools.error_item", Map.of("material", Material.PODZOL.name(), "excludeFromInventory", false, "injectID", false)),
+    ERROR_ITEM("ConfigsTools.error_item", Map.of("material", Material.PODZOL.name())),
 
     // Custom Armor
     CUSTOM_ARMOR_TYPE("CustomArmor.type", VersionUtil.atOrAbove("1.20") ? CustomArmorType.TRIMS.name() : CustomArmorType.SHADER.name()),
@@ -79,7 +79,7 @@ public enum Settings {
     // Furniture
     FURNITURE_OUTLINE_HITBOX("Furniture.outline.default", false),
     FURNITURE_OUTLINE_TYPE("Furniture.outline.type", FurnitureOutlineType.ITEM.name()),
-    FURNITURE_OUTLINE_ITEM("Furniture.outline.item", Map.of("material", Material.GLASS.name(), "excludeFromInventory", true, "injectID", false)),
+    FURNITURE_OUTLINE_ITEM("Furniture.outline.item", Map.of("material", Material.GLASS.name())),
     UPDATE_FURNITURE("Furniture.updater.update_furniture", true),
     UPDATE_FURNITURE_ON_RELOAD("Furniture.updater.update_on_reload", false),
     UPDATE_FURNITURE_ON_LOAD("Furniture.updater.update_on_load", false),

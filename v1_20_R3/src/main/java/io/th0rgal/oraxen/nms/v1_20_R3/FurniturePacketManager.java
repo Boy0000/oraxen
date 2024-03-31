@@ -70,7 +70,6 @@ public class FurniturePacketManager implements IFurniturePacketManager {
             if (blueprint != null && blueprint.getMainHitbox() != null) return;
         }
 
-        Location baseLoc = BlockHelpers.toCenterBlockLocation(baseEntity.getLocation());
         interactionHitboxPacketMap.computeIfAbsent(baseEntity.getUniqueId(), key -> {
             List<Integer> entityIds = interactionHitboxIdMap.stream()
                     .filter(ids -> ids.baseUUID().equals(baseEntity.getUniqueId()))
@@ -91,7 +90,7 @@ public class FurniturePacketManager implements IFurniturePacketManager {
                 InteractionHitbox hitbox = interactionHitboxes.get(i);
                 int entityId = entityIds.get(i);
 
-                Location loc = baseLoc.clone().add(hitbox.offset(baseEntity.getYaw()));
+                Location loc = hitbox.location(baseEntity);
                 ClientboundAddEntityPacket addEntityPacket = new ClientboundAddEntityPacket(
                         entityId, UUID.randomUUID(),
                         loc.x(), loc.y(), loc.z(), loc.getPitch(), loc.getYaw(),
@@ -165,7 +164,7 @@ public class FurniturePacketManager implements IFurniturePacketManager {
                 InteractionHitbox hitbox = interactionHitboxes.get(i);
                 int entityId = entityIds.get(i);
 
-                Location loc = hitbox.location(baseEntity);
+                Location loc = hitbox.location(baseEntity).add(0.0,hitbox.height() / 2.0, 0.0);
                 if (FurnitureOutlineType.fromSetting() == FurnitureOutlineType.BLOCK)
                     loc = BlockHelpers.toBlockLocation(loc);
                 ClientboundAddEntityPacket addEntityPacket = new ClientboundAddEntityPacket(
