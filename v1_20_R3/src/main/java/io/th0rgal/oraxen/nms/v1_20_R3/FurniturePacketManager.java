@@ -5,6 +5,7 @@ import com.ticxo.modelengine.api.generator.blueprint.ModelBlueprint;
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.Position;
 import io.th0rgal.oraxen.OraxenPlugin;
+import io.th0rgal.oraxen.api.OraxenFurniture;
 import io.th0rgal.oraxen.mechanics.MechanicsManager;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureMechanic;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureSubEntity;
@@ -19,7 +20,9 @@ import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -31,6 +34,7 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.util.*;
@@ -125,11 +129,11 @@ public class FurniturePacketManager implements IFurniturePacketManager {
     @Override
     public void sendHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
         List<InteractionHitbox> interactionHitboxes = mechanic.hitbox().interactionHitboxes();
-        if (interactionHitboxes.isEmpty()) return;
         if (hitboxOutlinePlayerMap.get(player.getUniqueId()) == baseEntity.getUniqueId()) return;
         removeHitboxOutlinePacket(player);
         hitboxOutlinePlayerMap.put(player.getUniqueId(), baseEntity.getUniqueId());
 
+        if (interactionHitboxes.isEmpty()) return;
         Location baseLocation = BlockHelpers.toCenterBlockLocation(baseEntity.getLocation());
 
 //        IntList entityIds = hitboxOutlineIdMap.stream().filter(o -> o.baseUUID().equals(baseEntity.getUniqueId())).findFirst().orElseGet(() -> {
@@ -161,7 +165,7 @@ public class FurniturePacketManager implements IFurniturePacketManager {
                 InteractionHitbox hitbox = interactionHitboxes.get(i);
                 int entityId = entityIds.get(i);
 
-                Location loc = baseLocation.clone().add(hitbox.offset(baseEntity.getYaw())).add(0,hitbox.height() / 2, 0);
+                Location loc = hitbox.location(baseEntity);
                 ClientboundAddEntityPacket addEntityPacket = new ClientboundAddEntityPacket(
                         entityId, UUID.randomUUID(),
                         loc.x(), loc.y(), loc.z(), loc.getPitch(), loc.getYaw(),
@@ -242,5 +246,50 @@ public class FurniturePacketManager implements IFurniturePacketManager {
                 .map(c -> c.groundRotate(baseEntity.getYaw()).add(baseEntity.getLocation()))
                 .collect(Collectors.toMap(Position::block, l -> AIR_DATA));
         player.sendMultiBlockChange(positions);
+    }
+
+    @Override @Nullable
+    public Entity getTargetFurnitureHitbox(Player player, double maxDistance) {
+        if (maxDistance < 1 || maxDistance > 120) return null;
+        CraftPlayer craftPlayer = (CraftPlayer) player;
+        net.minecraft.world.entity.player.Player nmsPlayer = craftPlayer.getHandle();
+        Vec3 start = nmsPlayer.getEyePosition(1.0F);
+        Vec3 direction = nmsPlayer.getLookAngle();
+        Vec3 distanceDirection = new Vec3(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance);
+        Vec3 end = start.add(distanceDirection);
+        List<net.minecraft.world.entity.Entity> entities = nmsPlayer.level().getEntities(nmsPlayer, nmsPlayer.getBoundingBox().expandTowards(distanceDirection).inflate(1.0,1.0,1.0), EntitySelector.NO_SPECTATORS);
+        double distance = 0.0;
+        Iterator<net.minecraft.world.entity.Entity> entityIterator = entities.iterator();
+
+        Entity baseEntity = null;
+        while (true) {
+            net.minecraft.world.entity.Entity entity;
+            Vec3 rayTrace;
+            double distanceTo;
+            do {
+                Optional<Vec3> rayTraceResult = Optional.empty();
+                do {
+                    if (!entityIterator.hasNext()) return baseEntity;
+
+                    entity = entityIterator.next();
+                    Entity bukkitEntity = entity.getBukkitEntity();
+                    FurnitureMechanic mechanic = OraxenFurniture.getFurnitureMechanic(bukkitEntity);
+                    // If entity is furniture, check all interactionHitboxes if their "bounding box" is colliding
+                    if (mechanic != null) for (InteractionHitbox hitbox : mechanic.hitbox().interactionHitboxes()) {
+                        Location hitboxLoc = hitbox.location(bukkitEntity);
+                        Vec3 hitboxVec = new Vec3(hitboxLoc.x(), hitboxLoc.y(), hitboxLoc.z());
+                        AABB hitboxAABB = AABB.ofSize(hitboxVec, hitbox.width(), hitbox.height(), hitbox.width()).move(0,0.5,0);
+                        rayTraceResult = hitboxAABB.clip(start, end);
+                        if (rayTraceResult.isPresent()) break;
+                    }
+                } while (rayTraceResult.isEmpty());
+
+                rayTrace = rayTraceResult.get();
+                distanceTo = start.distanceToSqr(rayTrace);
+            } while(!(distanceTo < distance) && distance != 0.0);
+
+            baseEntity = entity.getBukkitEntity();
+            distance = distanceTo;
+        }
     }
 }

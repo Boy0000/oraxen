@@ -22,11 +22,16 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +50,8 @@ public class FurniturePacketManager implements IFurniturePacketManager {
     private final int INTERACTION_WIDTH_ID = 8;
     private final int INTERACTION_HEIGHT_ID = 9;
     private final Map<UUID, Set<FurnitureInteractionHitboxPacket>> interactionHitboxPacketMap = new HashMap<>();
+    private final Map<UUID, Set<FurnitureSubEntityPacket>> outlineHitboxPacketMap = new HashMap<>();
+
     @Override
     public void sendInteractionEntityPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
         List<InteractionHitbox> interactionHitboxes = mechanic.hitbox().interactionHitboxes();
@@ -111,10 +118,93 @@ public class FurniturePacketManager implements IFurniturePacketManager {
         ((CraftPlayer) player).getHandle().connection.send(new ClientboundRemoveEntitiesPacket(entityIds.toIntArray()));
     }
 
-    @Override public void sendHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {}
-    @Override public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic) {}
-    @Override public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {}
-    @Override public void removeHitboxOutlinePacket(@NotNull Player player) {}
+    @Override
+    public void sendHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
+        List<InteractionHitbox> interactionHitboxes = mechanic.hitbox().interactionHitboxes();
+        if (hitboxOutlinePlayerMap.get(player.getUniqueId()) == baseEntity.getUniqueId()) return;
+        removeHitboxOutlinePacket(player);
+        hitboxOutlinePlayerMap.put(player.getUniqueId(), baseEntity.getUniqueId());
+
+        if (interactionHitboxes.isEmpty()) return;
+        Location baseLocation = BlockHelpers.toCenterBlockLocation(baseEntity.getLocation());
+
+//        IntList entityIds = hitboxOutlineIdMap.stream().filter(o -> o.baseUUID().equals(baseEntity.getUniqueId())).findFirst().orElseGet(() -> {
+//            List<Integer> outlineIds = new ArrayList<>(interactionHitboxes.size());
+//            while (outlineIds.size() < interactionHitboxes.size()) {
+//                outlineIds.add(net.minecraft.world.entity.Entity.nextEntityId());
+//            }
+//            return new FurnitureSubEntity(baseEntity.getUniqueId(), outlineIds);
+//        }).entityIds();
+
+        outlineHitboxPacketMap.computeIfAbsent(baseEntity.getUniqueId(), key -> {
+            List<Integer> entityIds = hitboxOutlineIdMap.stream()
+                    .filter(o -> o.baseUUID().equals(baseEntity.getUniqueId()))
+                    .findFirst()
+                    .map(FurnitureSubEntity::entityIds)
+                    .orElseGet(() -> {
+                        List<Integer> outlineIds = new ArrayList<>(interactionHitboxes.size());
+                        while (outlineIds.size() < interactionHitboxes.size())
+                            outlineIds.add(net.minecraft.world.entity.Entity.nextEntityId());
+
+                        FurnitureSubEntity subEntity = new FurnitureSubEntity(baseEntity.getUniqueId(), outlineIds);
+                        hitboxOutlineIdMap.add(subEntity);
+                        return subEntity.entityIds();
+                    });
+
+            ItemDisplay.ItemDisplayTransform transform = mechanic.hasDisplayEntityProperties() ? mechanic.displayEntityProperties().getDisplayTransform() : ItemDisplay.ItemDisplayTransform.FIXED;
+            Set<FurnitureSubEntityPacket> packets = new HashSet<>();
+            for (int i = 0; i < interactionHitboxes.size(); i++) {
+                InteractionHitbox hitbox = interactionHitboxes.get(i);
+                int entityId = entityIds.get(i);
+
+                Location loc = baseLocation.clone().add(hitbox.offset(baseEntity.getYaw())).add(0,hitbox.height() / 2, 0);
+                ClientboundAddEntityPacket addEntityPacket = new ClientboundAddEntityPacket(
+                        entityId, UUID.randomUUID(),
+                        loc.x(), loc.y(), loc.z(), loc.getPitch(), loc.getYaw(),
+                        EntityType.ITEM_DISPLAY, 0, Vec3.ZERO, 0.0
+                );
+
+                ClientboundSetEntityDataPacket metadataPacket = new ClientboundSetEntityDataPacket(
+                        entityId, Arrays.asList(
+                        new SynchedEntityData.DataValue<>(12, EntityDataSerializers.VECTOR3, new Vector3f(hitbox.width(), hitbox.height(), hitbox.width())),
+                        new SynchedEntityData.DataValue<>(23, EntityDataSerializers.ITEM_STACK, CraftItemStack.asNMSCopy(new ItemStack(Material.GLASS))),
+                        new SynchedEntityData.DataValue<>(24, EntityDataSerializers.INT, transform.ordinal())
+                ));
+
+                packets.add(new FurnitureSubEntityPacket(entityId, addEntityPacket, metadataPacket));
+            }
+            return packets;
+        }).forEach(packets -> {
+            ((CraftPlayer) player).getHandle().connection.send(packets.addEntity);
+            ((CraftPlayer) player).getHandle().connection.send(packets.metadata);
+        });
+    }
+
+    @Override
+    public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic) {
+        for (Player player : baseEntity.getWorld().getPlayers()) {
+            removeHitboxOutlinePacket(baseEntity, mechanic, player);
+        }
+    }
+
+    @Override
+    public void removeHitboxOutlinePacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {
+        hitboxOutlineIdMap.stream().filter(o -> o.baseUUID().equals(baseEntity.getUniqueId())).findFirst().ifPresent(outline -> {
+            ((CraftPlayer) player).getHandle().connection.send(new ClientboundRemoveEntitiesPacket(outline.entityIds()));
+            hitboxOutlineIdMap.removeIf(o -> o.baseUUID().equals(baseEntity.getUniqueId()));
+            hitboxOutlinePlayerMap.remove(player.getUniqueId());
+        });
+    }
+
+    @Override
+    public void removeHitboxOutlinePacket(@NotNull Player player) {
+        hitboxOutlinePlayerMap.entrySet().stream().filter(o -> o.getKey().equals(player.getUniqueId())).findFirst().ifPresent(entry -> {
+            hitboxOutlineIdMap.stream().filter(o -> o.baseUUID().equals(entry.getValue())).findFirst().ifPresent(outline -> {
+                ((CraftPlayer) player).getHandle().connection.send(new ClientboundRemoveEntitiesPacket(outline.entityIds()));
+                hitboxOutlinePlayerMap.remove(entry.getKey(), entry.getValue());
+            });
+        });
+    }
 
     @Override
     public void sendBarrierHitboxPacket(@NotNull Entity baseEntity, @NotNull FurnitureMechanic mechanic, @NotNull Player player) {

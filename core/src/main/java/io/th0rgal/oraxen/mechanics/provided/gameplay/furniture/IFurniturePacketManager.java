@@ -60,4 +60,9 @@ public interface IFurniturePacketManager {
             removeBarrierHitboxPacket(entity, mechanic);
         }
     }
+
+    @Nullable
+    default Entity getTargetFurnitureHitbox(Player player, double maxDistance) {
+        return null;
+    }
 }

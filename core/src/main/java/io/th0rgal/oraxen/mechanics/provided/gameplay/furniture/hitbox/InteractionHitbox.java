@@ -2,6 +2,8 @@ package io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.hitbox;
 
 import io.th0rgal.oraxen.utils.ParseUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -67,6 +69,15 @@ public class InteractionHitbox {
      */
     public Vector offset(float yaw) {
         return rotateOffset(yaw);
+    }
+
+    /**
+     * Gets a location offset from its given baseEntity
+     * @param baseEntity The baseEntity of this hitbox
+     * @return Offset location from baseEntity
+     */
+    public Location location(Entity baseEntity) {
+        return baseEntity.getLocation().clone().add(offset(baseEntity.getYaw()));
     }
 
     private Vector rotateOffset(float angle) {
