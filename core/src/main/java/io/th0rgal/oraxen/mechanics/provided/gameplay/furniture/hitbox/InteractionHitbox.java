@@ -1,5 +1,6 @@
 package io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.hitbox;
 
+import io.th0rgal.oraxen.utils.BlockHelpers;
 import io.th0rgal.oraxen.utils.ParseUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Location;
@@ -77,7 +78,7 @@ public class InteractionHitbox {
      * @return Offset location from baseEntity
      */
     public Location location(Entity baseEntity) {
-        return baseEntity.getLocation().clone().add(offset(baseEntity.getYaw()));
+        return BlockHelpers.toCenterBlockLocation(baseEntity.getLocation()).add(offset(baseEntity.getYaw())).add(0,height / 2, 0);
     }
 
     private Vector rotateOffset(float angle) {

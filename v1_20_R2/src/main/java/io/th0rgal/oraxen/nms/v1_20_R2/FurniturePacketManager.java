@@ -124,17 +124,7 @@ public class FurniturePacketManager implements IFurniturePacketManager {
         if (hitboxOutlinePlayerMap.get(player.getUniqueId()) == baseEntity.getUniqueId()) return;
         removeHitboxOutlinePacket(player);
         hitboxOutlinePlayerMap.put(player.getUniqueId(), baseEntity.getUniqueId());
-
         if (interactionHitboxes.isEmpty()) return;
-        Location baseLocation = BlockHelpers.toCenterBlockLocation(baseEntity.getLocation());
-
-//        IntList entityIds = hitboxOutlineIdMap.stream().filter(o -> o.baseUUID().equals(baseEntity.getUniqueId())).findFirst().orElseGet(() -> {
-//            List<Integer> outlineIds = new ArrayList<>(interactionHitboxes.size());
-//            while (outlineIds.size() < interactionHitboxes.size()) {
-//                outlineIds.add(net.minecraft.world.entity.Entity.nextEntityId());
-//            }
-//            return new FurnitureSubEntity(baseEntity.getUniqueId(), outlineIds);
-//        }).entityIds();
 
         outlineHitboxPacketMap.computeIfAbsent(baseEntity.getUniqueId(), key -> {
             List<Integer> entityIds = hitboxOutlineIdMap.stream()
@@ -157,10 +147,10 @@ public class FurniturePacketManager implements IFurniturePacketManager {
                 InteractionHitbox hitbox = interactionHitboxes.get(i);
                 int entityId = entityIds.get(i);
 
-                Location loc = baseLocation.clone().add(hitbox.offset(baseEntity.getYaw())).add(0,hitbox.height() / 2, 0);
+                Location loc = hitbox.location(baseEntity);
                 ClientboundAddEntityPacket addEntityPacket = new ClientboundAddEntityPacket(
                         entityId, UUID.randomUUID(),
-                        loc.x(), loc.y(), loc.z(), loc.getPitch(), loc.getYaw(),
+                        loc.x(), loc.y(), loc.z(), 0, loc.getYaw(),
                         EntityType.ITEM_DISPLAY, 0, Vec3.ZERO, 0.0
                 );
 
